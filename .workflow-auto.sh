@@ -59,7 +59,16 @@ auto_dev() {
 
     # 1. Setup environment
     log_info "1️⃣  Setting up development environment..."
-    bash ~/.cursor/workflow/main.sh dev 2>/dev/null || true
+    # Try to run workflow - check multiple locations for portability
+    if [ -f "./.workflow-main.sh" ]; then
+        bash ./.workflow-main.sh dev 2>/dev/null || true
+    elif command -v workflow &> /dev/null; then
+        workflow dev 2>/dev/null || true
+    elif [ -f "~/.cursor/workflow/main.sh" ]; then
+        bash ~/.cursor/workflow/main.sh dev 2>/dev/null || true
+    else
+        log_warn "Could not find main.sh - skipping setup"
+    fi
     log_success "Environment ready"
     echo ""
 
@@ -87,7 +96,17 @@ auto_review() {
 
     # 1. Prepare review branch
     log_info "1️⃣  Creating review branch..."
-    bash ~/.cursor/workflow/main.sh review
+    # Try to run workflow - check multiple locations for portability
+    if [ -f "./.workflow-main.sh" ]; then
+        bash ./.workflow-main.sh review
+    elif command -v workflow &> /dev/null; then
+        workflow review
+    elif [ -f "~/.cursor/workflow/main.sh" ]; then
+        bash ~/.cursor/workflow/main.sh review
+    else
+        log_error "Could not find workflow script for review stage"
+        return 1
+    fi
     log_success "Review branch created and pushed"
     echo ""
 
@@ -156,7 +175,8 @@ auto_test_deploy() {
     fi
 
     log_info "Merging $CURRENT_BRANCH..."
-    if ! git merge "$CURRENT_BRANCH" -m "Merge: Auto-deploy to production" --no-edit; then
+    # Use --no-edit to accept the default merge commit message
+    if ! git merge "$CURRENT_BRANCH" --no-edit; then
         log_error "Merge failed!"
         git merge --abort
         return 1

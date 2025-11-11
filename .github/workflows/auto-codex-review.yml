@@ -23,23 +23,28 @@ jobs:
           CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
           echo "current_branch=$CURRENT_BRANCH" >> $GITHUB_OUTPUT
 
-          # Get diff from main/master to current branch
-          echo "diff_summary<<EOF" >> $GITHUB_OUTPUT
+          # Detect base branch (main/master)
           if git rev-parse --verify main >/dev/null 2>&1; then
-            git diff --stat main..HEAD >> $GITHUB_OUTPUT || echo "No commits"
+            BASE_BRANCH="main"
           elif git rev-parse --verify master >/dev/null 2>&1; then
-            git diff --stat master..HEAD >> $GITHUB_OUTPUT || echo "No commits"
+            BASE_BRANCH="master"
           else
-            echo "No base branch" >> $GITHUB_OUTPUT
+            BASE_BRANCH="main"  # default fallback
           fi
+          echo "base_branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+
+          # Get diff from base branch to current branch
+          echo "diff_summary<<EOF" >> $GITHUB_OUTPUT
+          git diff --stat "${BASE_BRANCH}..HEAD" >> $GITHUB_OUTPUT || echo "No commits"
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Generate code review instructions
         id: review
         run: |
           BRANCH="${{ steps.branch-info.outputs.current_branch }}"
+          BASE_BRANCH="${{ steps.branch-info.outputs.base_branch }}"
           REPO="${{ github.repository }}"
-          COMPARE_URL="https://github.com/${REPO}/compare/master...${BRANCH}"
+          COMPARE_URL="https://github.com/${REPO}/compare/${BASE_BRANCH}...${BRANCH}"
 
           echo "📋 CODE REVIEW INSTRUCTIONS" > /tmp/review.md
           echo "============================" >> /tmp/review.md
