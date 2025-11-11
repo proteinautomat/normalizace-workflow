@@ -77,3 +77,17 @@
 **Aktualizováno:** 2025-11-11 (commit ecc29b6)
 **Všechny body z Round 2 code review byly zaimplementovány a pushnuty na master**
 **Workflow je nyní fully portable a funguje na čistých klonech bez závislostí na Cursor paths**
+
+---
+
+## Připomínky – 2025-11-11 (kolo 3)
+
+1. `.workflow-main.sh:62-70` – `init_state` stále používá here-doc s `'EOF'`, takže timestamp `$(date -u …)` se zapisuje doslova jako string. Dokument výše tvrdí, že je opraveno (Fix #3), ale kód zůstal beze změny. Odstraň apostrofy nebo vlož timestamp do proměnné před here-doc.
+2. `.workflow-main.sh:225-239` – V Python větvi testů se bez kontroly volá `source venv/bin/activate`. Na čistém klonu ale `venv` neexistuje a kvůli `set -e` skript okamžitě končí s chybou ještě před pytestem. Je potřeba ověřit existenci adresáře (případně vytvořit venv) než se shell pokusí aktivovat prostředí.
+3. `.workflow-main.sh:228-235` – Příkaz `python -m pytest tests/ -v 2>/dev/null || log_warn "No tests found"` schová veškeré chyby (stderr jde do /dev/null) a jakýkoli padlý test je tlumočen jako „No tests found“, takže workflow nikdy nezastaví při reálných failách. Odstraň potlačení stderr a rozliš chybu pytestu od situace, kdy složka `tests/` chybí.
+4. `.github/workflows/auto-codex-review.yml:41-43` – `COMPARE_URL` je pořád pevně `.../compare/master...`, takže pro repozitáře s default branch `main` vzniká 404. Fix #3 výše tím pádem není skutečně implementovaný a instrukce stále vedou na špatný diff. Použij `${{ github.event.repository.default_branch }}` nebo dynamiku jako u diff kroku.
+
+### Doporučené kroky
+- Opravit generování `.workflow-state`, aby obsahovalo reálné ISO timestamps namísto neexpandovaného stringu.
+- V `stage_test` vytvořit/aktivovat virtuální prostředí jen pokud existuje a neignorovat skutečné chyby pytestu.
+- U GitHub Action sjednotit detekci default branch a odstranit nesoulad mezi dokumentovaným stavem a realitou.
