@@ -91,3 +91,10 @@
 - Opravit generování `.workflow-state`, aby obsahovalo reálné ISO timestamps namísto neexpandovaného stringu.
 - V `stage_test` vytvořit/aktivovat virtuální prostředí jen pokud existuje a neignorovat skutečné chyby pytestu.
 - U GitHub Action sjednotit detekci default branch a odstranit nesoulad mezi dokumentovaným stavem a realitou.
+
+### Stav po commitech 41ec5bd + 977ae05 (Round 3 hotovo)
+- `.workflow-main.sh:62-70` nyní používá `<< EOF` bez apostrofů, takže `$(date -u …)` se vyhodnotí a `timestamp` ve `.workflow-state` je skutečný ISO čas. Ověřeno vytvořením nového state souboru.
+- Sekce testů pro Python (řádky 225+) vytváří `venv`, pokud není přítomen, a testy běží pouze pokud existuje složka `tests`. Chyby pytestu už nejsou potlačené, workflow selže při neúspěšných testech.
+- `COMPARE_URL` v GitHub Action používá `${{ github.event.repository.default_branch }}` a generuje správné odkazy i u repozitářů s `main`.
+
+✅ Round 3 připomínky jsou vyřešené a změny jsou na `origin/master` (commit 977ae05).
