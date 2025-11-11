@@ -1,0 +1,53 @@
+# Workflow Configuration Template
+# Copy this file to your project root and customize for your project
+
+# Project name
+project: "my-project"
+
+# Project type (python, nodejs, go, other)
+type: "python"
+
+# Build/Make commands for different stages
+make:
+  # Development setup
+  dev: "pip install -e . && pip install -r requirements-dev.txt"
+
+  # Testing
+  test: "pytest tests/ -v --cov=src"
+
+  # Linting
+  lint: "flake8 src/ && black --check src/"
+
+  # Code formatting
+  format: "black src/"
+
+  # Building
+  build: "python -m build"
+
+  # Running application
+  run: "python -m src.main"
+
+  # Deployment
+  deploy: "bash scripts/deploy.sh"
+
+# Health check endpoint
+health_check: "http://localhost:5000/health"
+
+# Documentation files to verify in review
+docs:
+  - "README.md"
+  - "CONTRIBUTING.md"
+  - "docs/API.md"
+
+# Files to exclude from review
+exclude:
+  - "*.lock"
+  - ".env"
+  - "node_modules/"
+  - "__pycache__/"
+
+# Slack/Email notifications (optional)
+notifications:
+  # on_review_fail: "slack"
+  # on_deploy_success: "email"
+  enabled: false
