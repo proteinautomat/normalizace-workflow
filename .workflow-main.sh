@@ -60,7 +60,7 @@ check_config() {
 }
 
 init_state() {
-    cat > "$STATE_FILE" << 'EOF'
+    cat > "$STATE_FILE" << EOF
 {
   "stage": "idle",
   "branch": "develop",
@@ -225,8 +225,28 @@ stage_test() {
         python)
             if [ -f "requirements.txt" ]; then
                 log_info "Testing Python environment..."
+
+                # Check if venv exists, create if needed
+                if [ ! -d "venv" ]; then
+                    log_info "Virtual environment not found, creating..."
+                    python3 -m venv venv
+                fi
+
+                # Activate virtual environment
                 source venv/bin/activate
-                python -m pytest tests/ -v 2>/dev/null || log_warn "No tests found"
+
+                # Run tests if tests directory exists
+                if [ -d "tests" ]; then
+                    log_info "Running pytest..."
+                    if python -m pytest tests/ -v; then
+                        log_success "All tests passed"
+                    else
+                        log_error "Tests failed"
+                        return 1
+                    fi
+                else
+                    log_warn "No tests directory found"
+                fi
 
                 # Run health check if available
                 if grep -q "uvicorn\|fastapi" requirements.txt; then
