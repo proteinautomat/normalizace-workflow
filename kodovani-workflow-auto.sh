@@ -11,9 +11,9 @@
 # 5. Deploy (Automatic)
 #
 # Usage:
-#   workflow-auto dev [message]      # Develop + auto-review
-#   workflow-auto full               # Full cycle
-#   workflow-auto watch              # Watch for changes and auto-deploy
+#   kodovani-auto dev [message]      # Develop + auto-review
+#   kodovani-auto full               # Full cycle
+#   kodovani-auto watch              # Watch for changes and auto-deploy
 #
 ###############################################################################
 
@@ -45,6 +45,25 @@ log_error() {
     echo -e "${RED}✗${NC} $1" >&2
 }
 
+run_kodovani_command() {
+    local subcommand="$1"
+    shift || true
+
+    if [ -f "${PROJECT_ROOT}/kodovani-workflow.sh" ]; then
+        bash "${PROJECT_ROOT}/kodovani-workflow.sh" "$subcommand" "$@"
+    elif command -v kodovani >/dev/null 2>&1; then
+        kodovani "$subcommand" "$@"
+    elif [ -f "${PROJECT_ROOT}/.workflow-main.sh" ]; then
+        bash "${PROJECT_ROOT}/.workflow-main.sh" "$subcommand" "$@"
+    elif command -v workflow >/dev/null 2>&1; then
+        workflow "$subcommand" "$@"
+    elif [ -f "${HOME}/.cursor/workflow/main.sh" ]; then
+        bash "${HOME}/.cursor/workflow/main.sh" "$subcommand" "$@"
+    else
+        return 1
+    fi
+}
+
 ###############################################################################
 # AUTO DEVELOPMENT CYCLE
 ###############################################################################
@@ -59,26 +78,19 @@ auto_dev() {
 
     # 1. Setup environment
     log_info "1️⃣  Setting up development environment..."
-    # Try to run workflow - check multiple locations for portability
-    if [ -f "./.workflow-main.sh" ]; then
-        bash ./.workflow-main.sh dev 2>/dev/null || true
-    elif command -v workflow &> /dev/null; then
-        workflow dev 2>/dev/null || true
-    elif [ -f "~/.cursor/workflow/main.sh" ]; then
-        bash ~/.cursor/workflow/main.sh dev 2>/dev/null || true
-    else
-        log_warn "Could not find main.sh - skipping setup"
+    if ! run_kodovani_command dev >/dev/null 2>&1; then
+        log_warn "Could not find kodovani workflow script - skipping setup"
     fi
     log_success "Environment ready"
     echo ""
 
     # 2. Wait for user coding (they do this manually in Cursor)
-    log_warn "2️⃣  Manual: Code your changes in Cursor"
+    log_warn "2️⃣  Manual: Code your changes in editor"
     log_info "    - Make your code changes"
     log_info "    - Update documentation"
-    log_info "    - Press Ctrl+C here when done, then run: workflow-auto review"
+    log_info "    - Press Ctrl+C here when done, then run: kodovani-auto review"
     echo ""
-    log_info "Or continue with: workflow-auto auto-review [message]"
+    log_info "Or continue with: kodovani-auto auto-review [message]"
     echo ""
 }
 
@@ -96,15 +108,8 @@ auto_review() {
 
     # 1. Prepare review branch
     log_info "1️⃣  Creating review branch..."
-    # Try to run workflow - check multiple locations for portability
-    if [ -f "./.workflow-main.sh" ]; then
-        bash ./.workflow-main.sh review
-    elif command -v workflow &> /dev/null; then
-        workflow review
-    elif [ -f "~/.cursor/workflow/main.sh" ]; then
-        bash ~/.cursor/workflow/main.sh review
-    else
-        log_error "Could not find workflow script for review stage"
+    if ! run_kodovani_command review; then
+        log_error "Could not find kodovani workflow script for review stage"
         return 1
     fi
     log_success "Review branch created and pushed"
@@ -122,12 +127,12 @@ auto_review() {
 
     # 4. Integrate
     log_info "3️⃣  Integrating code review feedback..."
-    bash ~/.cursor/workflow/main.sh integrate || log_warn "No changes to integrate"
+    run_kodovani_command integrate || log_warn "No changes to integrate"
     log_success "Review integrated"
     echo ""
 
     log_success "Automatic review & integration complete!"
-    log_info "Next: Run 'workflow-auto test-deploy' for testing & deployment"
+    log_info "Next: Run 'kodovani-auto test-deploy' for testing & deployment"
     echo ""
 }
 
@@ -143,7 +148,7 @@ auto_test_deploy() {
 
     # 1. Run tests
     log_info "1️⃣  Running tests..."
-    if ! bash ~/.cursor/workflow/main.sh test 2>&1; then
+    if ! run_kodovani_command test; then
         log_error "Tests failed! Fix issues before deploying."
         return 1
     fi
@@ -271,7 +276,7 @@ auto_watch() {
 main() {
     if [ ! -f "$WORKFLOW_CONFIG" ]; then
         log_error "Workflow not initialized"
-        log_info "Run: workflow init"
+        log_info "Run: kodovani init"
         exit 1
     fi
 
@@ -282,7 +287,7 @@ main() {
 ║  Auto: Review → Integrate → Test → Deploy                     ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Usage: workflow-auto <command>
+Usage: kodovani-auto <command>
 
 Commands:
   dev                Start development
@@ -292,19 +297,19 @@ Commands:
   watch              Watch mode - auto-deploy on changes
 
 Examples:
-  workflow-auto dev
-  workflow-auto auto-review
-  workflow-auto full
-  workflow-auto watch
+  kodovani-auto dev
+  kodovani-auto auto-review
+  kodovani-auto full
+  kodovani-auto watch
 
 Full workflow:
-  1. Code in Cursor
-  2. workflow-auto auto-review
-  3. workflow-auto test-deploy
+  1. Code in editor
+  2. kodovani-auto auto-review
+  3. kodovani-auto test-deploy
   4. Done! Deployed automatically
 
 Or run full cycle:
-  workflow-auto full
+  kodovani-auto full
 EOF
         return 0
     fi

@@ -7,7 +7,7 @@
 
 1. `.github/workflows/auto-codex-review.yml:40-55` – Workflow má napevno `REPO="proteinautomat/brani-sklad"`, takže odkaz na diff a GitHub porovnání vždy míří do úplně jiného repozitáře. Na tomto repu se pak po spuštění akce zobrazuje prázdná/nesouvisející změna. Opravit na `${{ github.repository }}` (případně načíst owner/repo z kontextu) a tím pádem generovat compare URL pro aktuální projekt.
 2. `.github/workflows/auto-codex-review.yml:97-178` – V horní části instrukcí žádáš člověka, aby upravil `REVIEW.md`, ale později ve stejném jobu soubor znovu vytváříš s pevně daným textem „✅ Approved“ a rovnou ho pushuješ zpět do větve. Výsledkem je, že ruční poznámky nikdy nepřežijí, akce vždy automaticky schválí změny a každé spuštění přidává další commit. Navrhnu rozdělit chování: buď generovat jen instrukce a necommittovat nic, nebo commitovat výsledek, ale pak nepožadovat manuální edit.
-3. `.workflow-main.sh:62-70` – Funkce `init_state` zapisuje JSON přes `cat << 'EOF'`, takže výraz `$(date -u ...)` se nespustí a do souboru se uloží doslova text `$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Stavový soubor tak nikdy neobsahuje skutečné časové razítko. Stačí odstranit uvozovky kolem `EOF` nebo vložit timestamp jinak (např. přes `DATE=$(date -u ...); cat <<EOF ... $DATE`).
+3. `kodovani-workflow.sh:62-70` – Funkce `init_state` zapisuje JSON přes `cat << 'EOF'`, takže výraz `$(date -u ...)` se nespustí a do souboru se uloží doslova text `$(date -u +%Y-%m-%dT%H:%M:%SZ)`. Stavový soubor tak nikdy neobsahuje skutečné časové razítko. Stačí odstranit uvozovky kolem `EOF` nebo vložit timestamp jinak (např. přes `DATE=$(date -u ...); cat <<EOF ... $DATE`).
 
 ## Implementace oprav
 
@@ -45,8 +45,8 @@
 
 ## Nové připomínky – 2025-11-11 (kolo 2)
 
-1. `.workflow-auto.sh:62-107` – Skript stále volá `bash ~/.cursor/workflow/main.sh …`. To funguje jen na stroji, kde běží Cursor s tímto path, ale kdokoli jiný, kdo si repo klonuje, tyto soubory nemá a automatický cyklus končí chybou „No such file or directory“. Doporučuji spouštět lokální `.workflow-main.sh` z aktuálního projektu (např. `bash "${PROJECT_ROOT}/.workflow-main.sh" …`) nebo alespoň detekovat dostupnost aliasu.
-2. `.workflow-auto.sh:158-167` – Příkaz `git merge "$CURRENT_BRANCH" -m "…" --no-edit` používá současně `-m` i `--no-edit`, což Git odmítá („You cannot combine --no-edit with -m“). Deploy fáze se tím pádem vždy zastaví na chybě. Vyber jeden z těchto způsobů zadání message (typicky stačí `--no-edit`, protože Git použije výchozí zprávu).
+1. `kodovani-workflow-auto.sh:62-107` – Skript stále volá `bash ~/.cursor/workflow/main.sh …`. To funguje jen na stroji, kde běží Cursor s tímto path, ale kdokoli jiný, kdo si repo klonuje, tyto soubory nemá a automatický cyklus končí chybou „No such file or directory“. Doporučuji spouštět lokální `kodovani-workflow.sh` z aktuálního projektu (např. `bash "${PROJECT_ROOT}/kodovani-workflow.sh" …`) nebo alespoň detekovat dostupnost aliasu.
+2. `kodovani-workflow-auto.sh:158-167` – Příkaz `git merge "$CURRENT_BRANCH" -m "…" --no-edit` používá současně `-m` i `--no-edit`, což Git odmítá („You cannot combine --no-edit with -m“). Deploy fáze se tím pádem vždy zastaví na chybě. Vyber jeden z těchto způsobů zadání message (typicky stačí `--no-edit`, protože Git použije výchozí zprávu).
 3. `.github/workflows/auto-codex-review.yml:41-43` – Compare URL je napevno `.../compare/master...`, i když většina repozitářů používá `main`. Pokud je default branch `main`, odkaz na diff skončí 404. Stejně jako ve `Get branch info` kroku je potřeba detekovat základní větev (main/master) nebo použít `${{ github.event.repository.default_branch }}`.
 
 ### Implementace Round 2 (Commit ecc29b6)
@@ -54,13 +54,13 @@
 ✅ **Všechny opravy Round 2 byly implementovány**
 
 **Fix #1: Hard-coded paths → Portable locations**
-- Soubor: `.workflow-auto.sh:60-71` a `97-110`
-- Změna: Nyní kontroluje multiple locations - `./.workflow-main.sh` (lokální), `workflow` alias, `~/.cursor/workflow/main.sh`
+- Soubor: `kodovani-workflow-auto.sh:60-71` a `97-110`
+- Změna: Nyní kontroluje multiple locations - `./kodovani-workflow.sh` (lokální), `workflow` alias, `~/.cursor/workflow/main.sh`
 - Výsledek: Script funguje na čistém stroji bez Cursor-specific paths
 - Status: ✅ DONE
 
 **Fix #2: Git merge parameter conflict → Valid syntax**
-- Soubor: `.workflow-auto.sh:177-183`
+- Soubor: `kodovani-workflow-auto.sh:177-183`
 - Změna: Odstraněno `-m "message"`, ponecháno jen `--no-edit`
 - Důvod: Git odmítá kombinaci `-m` a `--no-edit`
 - Výsledek: Deploy fáze teď funguje, merge doběhne bez chyby
@@ -82,9 +82,9 @@
 
 ## Připomínky – 2025-11-11 (kolo 3)
 
-1. `.workflow-main.sh:62-70` – `init_state` stále používá here-doc s `'EOF'`, takže timestamp `$(date -u …)` se zapisuje doslova jako string. Dokument výše tvrdí, že je opraveno (Fix #3), ale kód zůstal beze změny. Odstraň apostrofy nebo vlož timestamp do proměnné před here-doc.
-2. `.workflow-main.sh:225-239` – V Python větvi testů se bez kontroly volá `source venv/bin/activate`. Na čistém klonu ale `venv` neexistuje a kvůli `set -e` skript okamžitě končí s chybou ještě před pytestem. Je potřeba ověřit existenci adresáře (případně vytvořit venv) než se shell pokusí aktivovat prostředí.
-3. `.workflow-main.sh:228-235` – Příkaz `python -m pytest tests/ -v 2>/dev/null || log_warn "No tests found"` schová veškeré chyby (stderr jde do /dev/null) a jakýkoli padlý test je tlumočen jako „No tests found“, takže workflow nikdy nezastaví při reálných failách. Odstraň potlačení stderr a rozliš chybu pytestu od situace, kdy složka `tests/` chybí.
+1. `kodovani-workflow.sh:62-70` – `init_state` stále používá here-doc s `'EOF'`, takže timestamp `$(date -u …)` se zapisuje doslova jako string. Dokument výše tvrdí, že je opraveno (Fix #3), ale kód zůstal beze změny. Odstraň apostrofy nebo vlož timestamp do proměnné před here-doc.
+2. `kodovani-workflow.sh:225-239` – V Python větvi testů se bez kontroly volá `source venv/bin/activate`. Na čistém klonu ale `venv` neexistuje a kvůli `set -e` skript okamžitě končí s chybou ještě před pytestem. Je potřeba ověřit existenci adresáře (případně vytvořit venv) než se shell pokusí aktivovat prostředí.
+3. `kodovani-workflow.sh:228-235` – Příkaz `python -m pytest tests/ -v 2>/dev/null || log_warn "No tests found"` schová veškeré chyby (stderr jde do /dev/null) a jakýkoli padlý test je tlumočen jako „No tests found“, takže workflow nikdy nezastaví při reálných failách. Odstraň potlačení stderr a rozliš chybu pytestu od situace, kdy složka `tests/` chybí.
 4. `.github/workflows/auto-codex-review.yml:41-43` – `COMPARE_URL` je pořád pevně `.../compare/master...`, takže pro repozitáře s default branch `main` vzniká 404. Fix #3 výše tím pádem není skutečně implementovaný a instrukce stále vedou na špatný diff. Použij `${{ github.event.repository.default_branch }}` nebo dynamiku jako u diff kroku.
 
 ### Doporučené kroky
@@ -93,7 +93,7 @@
 - U GitHub Action sjednotit detekci default branch a odstranit nesoulad mezi dokumentovaným stavem a realitou.
 
 ### Stav po commitech 41ec5bd + 977ae05 (Round 3 hotovo)
-- `.workflow-main.sh:62-70` nyní používá `<< EOF` bez apostrofů, takže `$(date -u …)` se vyhodnotí a `timestamp` ve `.workflow-state` je skutečný ISO čas. Ověřeno vytvořením nového state souboru.
+- `kodovani-workflow.sh:62-70` nyní používá `<< EOF` bez apostrofů, takže `$(date -u …)` se vyhodnotí a `timestamp` ve `.workflow-state` je skutečný ISO čas. Ověřeno vytvořením nového state souboru.
 - Sekce testů pro Python (řádky 225+) vytváří `venv`, pokud není přítomen, a testy běží pouze pokud existuje složka `tests`. Chyby pytestu už nejsou potlačené, workflow selže při neúspěšných testech.
 - `COMPARE_URL` v GitHub Action používá `${{ github.event.repository.default_branch }}` a generuje správné odkazy i u repozitářů s `main`.
 

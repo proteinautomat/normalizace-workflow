@@ -106,8 +106,8 @@ Add aliases to your shell for easy access:
 Add to `~/.bashrc` or `~/.zshrc`:
 
 ```bash
-alias workflow-auto='bash /root/normalizace-workflow/.workflow-auto.sh'
-alias workflow='bash /root/normalizace-workflow/.workflow-main.sh'
+alias kodovani-auto='bash /root/normalizace-workflow/kodovani-workflow-auto.sh'
+alias kodovani='bash /root/normalizace-workflow/kodovani-workflow.sh'
 ```
 
 Then reload:
@@ -121,8 +121,8 @@ source ~/.bashrc  # or source ~/.zshrc
 Add to `~/.config/fish/config.fish`:
 
 ```fish
-alias workflow-auto 'bash /root/normalizace-workflow/.workflow-auto.sh'
-alias workflow 'bash /root/normalizace-workflow/.workflow-main.sh'
+alias kodovani-auto 'bash /root/normalizace-workflow/kodovani-workflow-auto.sh'
+alias kodovani 'bash /root/normalizace-workflow/kodovani-workflow.sh'
 ```
 
 ## Cursor IDE Integration
@@ -150,8 +150,8 @@ This ensures proper working directory when using workflow commands.
 
 ```bash
 # Test workflow aliases
-workflow --help
-workflow-auto --help
+kodovani --help
+kodovani-auto --help
 
 # Check GitHub Actions
 # Visit: https://github.com/YOUR_ORG/YOUR_REPO/actions
@@ -208,12 +208,12 @@ git pull origin master
 
 **Solution:**
 ```bash
-chmod +x /root/normalizace-workflow/.workflow-*.sh
+chmod +x /root/normalizace-workflow/kodovani-workflow*.sh
 ```
 
 ### Tests Failing
 
-**Problem:** Tests fail when running workflow-auto test-deploy
+**Problem:** Tests fail when running kodovani-auto test-deploy
 
 **Solution:**
 1. Fix tests locally first
@@ -234,7 +234,7 @@ chmod +x /root/normalizace-workflow/.workflow-*.sh
 
 1. Check workflow logs on GitHub Actions tab
 2. Review `.workflow.yaml` configuration
-3. Test workflow locally with `workflow --help`
+3. Test workflow locally with `kodovani --help`
 4. Check file permissions: `ls -la .github/workflows/`
 
 ## Next Steps
@@ -255,6 +255,6 @@ See [README.md](README.md) for usage examples.
 Your project now has automatic code review and deployment. Start using it:
 
 ```bash
-workflow-auto auto-review    # Automatic review
-workflow-auto test-deploy    # Test and deploy
+kodovani-auto auto-review    # Automatic review
+kodovani-auto test-deploy    # Test and deploy
 ```

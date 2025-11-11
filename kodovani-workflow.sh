@@ -7,12 +7,12 @@
 # Works with any project type (Python, Node.js, Go, etc.)
 #
 # Usage:
-#   workflow dev          - Start development
-#   workflow review       - Prepare for Codex review
-#   workflow integrate    - Integrate Codex review
-#   workflow test         - Run local tests
-#   workflow deploy       - Deploy to server
-#   workflow status       - Show workflow status
+#   kodovani dev          - Start development
+#   kodovani review       - Prepare for Codex review
+#   kodovani integrate    - Integrate Codex review
+#   kodovani test         - Run local tests
+#   kodovani deploy       - Deploy to server
+#   kodovani status       - Show workflow status
 #
 # Author: Claude Code Generator
 ###############################################################################
@@ -54,7 +54,7 @@ log_error() {
 check_config() {
     if [ ! -f "$WORKFLOW_CONFIG" ]; then
         log_error "Workflow config not found: $WORKFLOW_CONFIG"
-        log_info "Run 'workflow init' first to create config"
+        log_info "Run 'kodovani init' first to create config"
         exit 1
     fi
 }
@@ -210,7 +210,7 @@ stage_integrate() {
     fi
 
     log_success "Codex review integrated"
-    log_info "Next: Run tests with 'workflow test'"
+    log_info "Next: Run tests with 'kodovani test'"
 }
 
 # STAGE 4: TEST - Local testing before deployment
@@ -375,11 +375,11 @@ main() {
     if [ $# -eq 0 ]; then
         cat << 'EOF'
 ╔════════════════════════════════════════════════════════════════╗
-║     UNIVERSAL DEVOPS WORKFLOW ORCHESTRATOR                     ║
+║      KODOVANI WORKFLOW ORCHESTRATOR                           ║
 ║  Code → Review → GitHub → Test → Deploy                       ║
 ╚════════════════════════════════════════════════════════════════╝
 
-Usage: workflow <command>
+Usage: kodovani <command>
 
 Commands:
   init       Initialize workflow for this project
@@ -391,14 +391,14 @@ Commands:
   status     Show workflow status
 
 Examples:
-  workflow init              # First time setup
-  workflow dev               # Start coding
-  workflow review            # Create review branch
-  workflow integrate         # Merge review changes
-  workflow test              # Test locally
-  workflow deploy            # Deploy to server
+  kodovani init              # First time setup
+  kodovani dev               # Start coding
+  kodovani review            # Create review branch
+  kodovani integrate         # Merge review changes
+  kodovani test              # Test locally
+  kodovani deploy            # Deploy to server
 
-For more info: cat ~/.cursor/workflow/README.md
+For more info: cat README.md
 EOF
         return 0
     fi
@@ -427,7 +427,7 @@ EOF
             ;;
         *)
             log_error "Unknown command: $1"
-            echo "Run 'workflow' with no arguments to see help"
+            echo "Run 'kodovani' with no arguments to see help"
             return 1
             ;;
     esac

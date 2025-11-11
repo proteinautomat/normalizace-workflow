@@ -27,7 +27,7 @@ Work normally in your editor. No special workflow needed.
 Push to a review branch - GitHub Actions automatically runs.
 
 ```bash
-workflow-auto auto-review
+kodovani-auto auto-review
 
 # What happens:
 # 1. Creates review branch: review/dev-*
@@ -55,7 +55,7 @@ GitHub Diff URL: https://github.com/YOUR/REPO/compare/master...review/your-branc
 Tests run and code is automatically deployed.
 
 ```bash
-workflow-auto test-deploy
+kodovani-auto test-deploy
 
 # What happens:
 # 1. Runs all tests
@@ -143,8 +143,8 @@ cp .github/workflows/auto-codex-review.yml YOUR_REPO/.github/workflows/
 2. **Add aliases to your shell** (`.bashrc` or `.zshrc`):
 
 ```bash
-alias workflow-auto='bash /path/to/.workflow-auto.sh'
-alias workflow='bash /path/to/.workflow-main.sh'
+alias kodovani-auto='bash /path/to/kodovani-workflow-auto.sh'
+alias kodovani='bash /path/to/kodovani-workflow.sh'
 ```
 
 3. **Push to GitHub:**
@@ -165,8 +165,8 @@ git clone https://github.com/YOUR_ORG/normalizace-workflow
 cd normalizace-workflow
 
 # Use the workflow scripts
-bash .workflow-main.sh --help
-bash .workflow-auto.sh --help
+bash kodovani-workflow.sh --help
+bash kodovani-workflow-auto.sh --help
 ```
 
 ## Quick Start
@@ -175,21 +175,21 @@ bash .workflow-auto.sh --help
 
 ```bash
 cd your-project
-workflow init
+kodovani init
 ```
 
 ### Step 2: Start Development
 
 ```bash
 # Method 1: Step by step
-workflow-auto auto-review    # Review stage
-workflow-auto test-deploy    # Deploy stage
+kodovani-auto auto-review    # Review stage
+kodovani-auto test-deploy    # Deploy stage
 
 # Method 2: Full cycle
-workflow-auto full           # All stages in one command
+kodovani-auto full           # All stages in one command
 
 # Method 3: Watch mode
-workflow-auto watch         # Auto-deploy on every commit
+kodovani-auto watch         # Auto-deploy on every commit
 ```
 
 ## File Structure
@@ -199,8 +199,8 @@ workflow-auto watch         # Auto-deploy on every commit
 ├── .github/workflows/
 │   └── auto-codex-review.yml          # GitHub Actions workflow
 ├── .workflow-logs/                     # Workflow execution logs
-├── .workflow-main.sh                   # Manual workflow orchestrator
-├── .workflow-auto.sh                   # Automatic workflow orchestrator
+├── kodovani-workflow.sh                # Manual workflow orchestrator
+├── kodovani-workflow-auto.sh          # Automatic workflow orchestrator
 ├── .workflow.yaml                      # Per-project configuration
 └── README.md
 ```
@@ -246,23 +246,23 @@ The `auto-codex-review.yml` workflow:
 ### Manual Workflow
 
 ```bash
-workflow init              # Initialize workflow
-workflow dev              # Start development
-workflow review           # Create review branch
-workflow integrate        # Merge review feedback
-workflow test             # Run tests
-workflow deploy           # Deploy to production
-workflow status           # Check current status
+kodovani init              # Initialize workflow
+kodovani dev              # Start development
+kodovani review           # Create review branch
+kodovani integrate        # Merge review feedback
+kodovani test             # Run tests
+kodovani deploy           # Deploy to production
+kodovani status           # Check current status
 ```
 
 ### Automatic Workflow (Recommended)
 
 ```bash
-workflow-auto dev              # Development setup
-workflow-auto auto-review      # Automatic: Review + Integrate
-workflow-auto test-deploy      # Automatic: Test + Deploy
-workflow-auto full             # Automatic: Full cycle
-workflow-auto watch            # Watch mode - auto-deploy on changes
+kodovani-auto dev              # Development setup
+kodovani-auto auto-review      # Automatic: Review + Integrate
+kodovani-auto test-deploy      # Automatic: Test + Deploy
+kodovani-auto full             # Automatic: Full cycle
+kodovani-auto watch            # Watch mode - auto-deploy on changes
 ```
 
 ## Real-World Example
@@ -279,7 +279,7 @@ cd my-project
 # Test locally
 
 # 12:00 - Push to review
-workflow-auto auto-review
+kodovani-auto auto-review
 
 # GitHub Actions runs automatically:
 # - Generates review instructions
@@ -288,7 +288,7 @@ workflow-auto auto-review
 # (Takes ~30 seconds)
 
 # 12:30 - Deploy
-workflow-auto test-deploy
+kodovani-auto test-deploy
 
 # What happens:
 # 1. Tests run locally
@@ -301,7 +301,7 @@ workflow-auto test-deploy
 
 ## How Review Works
 
-When you run `workflow-auto auto-review`:
+When you run `kodovani-auto auto-review`:
 
 ```
 1. Code is pushed to review/dev-* branch
@@ -364,15 +364,15 @@ Check:
 
 Solution:
 1. Fix failing tests locally
-2. Run `workflow-auto test-deploy` again
+2. Run `kodovani-auto test-deploy` again
 3. Deploy only runs after tests pass
 
 ## Architecture
 
 ### Components
 
-- **Main Orchestrator** (`.workflow-main.sh`): Manual workflow control
-- **Auto Orchestrator** (`.workflow-auto.sh`): Automatic execution
+- **Main Orchestrator** (`kodovani-workflow.sh`): Manual workflow control
+- **Auto Orchestrator** (`.kodovani-auto.sh`): Automatic execution
 - **GitHub Actions** (`auto-codex-review.yml`): Remote code review automation
 - **Config** (`.workflow.yaml`): Per-project settings
 
@@ -410,7 +410,7 @@ The system auto-detects project type and configures accordingly.
 ### Continuous Deployment
 
 ```bash
-workflow-auto watch
+kodovani-auto watch
 
 # Monitors git for changes
 # Auto-runs full cycle on each commit

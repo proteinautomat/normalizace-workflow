@@ -113,7 +113,7 @@ jobs:
           echo "" >> /tmp/review.md
           echo "3. **After review is done**, run:" >> /tmp/review.md
           echo "   \`\`\`bash" >> /tmp/review.md
-          echo "   workflow integrate" >> /tmp/review.md
+          echo "   kodovani integrate" >> /tmp/review.md
           echo "   \`\`\`" >> /tmp/review.md
           echo "" >> /tmp/review.md
 
@@ -169,7 +169,7 @@ jobs:
              git commit -m "review: My findings"
              git push origin HEAD
 
-          When ready to integrate, run: workflow integrate
+          When ready to integrate, run: kodovani integrate
           INSTR_EOF
 
           echo "✅ Review instructions created"
@@ -182,6 +182,6 @@ jobs:
           echo "Status: Ready for integration"
           echo ""
           echo "Next steps:"
-          echo "1. workflow integrate   (to merge this review)"
-          echo "2. workflow test        (to run tests)"
-          echo "3. workflow deploy      (to deploy)"
+          echo "1. kodovani integrate   (to merge this review)"
+          echo "2. kodovani test        (to run tests)"
+          echo "3. kodovani deploy      (to deploy)"
