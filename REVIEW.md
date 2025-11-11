@@ -98,3 +98,21 @@
 - `COMPARE_URL` v GitHub Action používá `${{ github.event.repository.default_branch }}` a generuje správné odkazy i u repozitářů s `main`.
 
 ✅ Round 3 připomínky jsou vyřešené a změny jsou na `origin/master` (commit 977ae05).
+
+---
+
+## Připomínky – 2025-11-11 (kolo 4)
+
+### Zjištění
+1. **Názvosloví “workflow” vs. “kodovani”** – Požadavek je mít jednotný příkaz „kodovani workflow“, ale repo stále používalo staré skripty `.workflow-main.sh` / `.workflow-auto.sh`, aliasy `workflow*` a instrukce v GitHub Action. Agent tak neměl šanci poznat, že „kodovani workflow“ = konkrétní skripty.
+2. **Dokumentace** – README/INSTALLATION stále instruovaly přidat aliasy `workflow` / `workflow-auto` a zmiňovaly původní skripty. Text byl nekonzistentní se zadáním.
+3. **GitHub Action** – Review checklist i log kroků doporučovaly příkazy `workflow integrate/test/deploy`, takže ani po přejmenování by se automatický návod nechoval správně.
+
+### Opravy
+- Přejmenované skripty: `.workflow-main.sh` → `kodovani-workflow.sh`, `.workflow-auto.sh` → `kodovani-workflow-auto.sh`. Auto skript má nový helper, který preferuje `kodovani` příkazy, ale umí fallback na staré názvy pro starší instalace.
+- README + INSTALLATION teď učí aliasy `kodovani` a `kodovani-auto`, odkazují na nové soubory a ukazují příkazy `kodovani ...`.
+- GitHub Action checklist, instrukce i závěrečný log používají `kodovani integrate/test/deploy`.
+- REVIEW.md doplněn touto sekcí, aby bylo zaznamenáno, že „kodovani workflow“ je finální pojmenování.
+
+### Stav
+Všechny odkazy na `workflow` příkazy (mimo historický popis) byly nahrazeny `kodovani`. Repo je připravené na používání jediného názvu „kodovani workflow“.
