@@ -40,3 +40,16 @@
 
 **Aktualizováno:** 2025-11-11 (commit 032835c)
 **Všechny body z code review byly zaimplementovány a pushnuty na master**
+
+---
+
+## Nové připomínky – 2025-11-11 (kolo 2)
+
+1. `.workflow-auto.sh:62-107` – Skript stále volá `bash ~/.cursor/workflow/main.sh …`. To funguje jen na stroji, kde běží Cursor s tímto path, ale kdokoli jiný, kdo si repo klonuje, tyto soubory nemá a automatický cyklus končí chybou „No such file or directory“. Doporučuji spouštět lokální `.workflow-main.sh` z aktuálního projektu (např. `bash "${PROJECT_ROOT}/.workflow-main.sh" …`) nebo alespoň detekovat dostupnost aliasu.
+2. `.workflow-auto.sh:158-167` – Příkaz `git merge "$CURRENT_BRANCH" -m "…" --no-edit` používá současně `-m` i `--no-edit`, což Git odmítá („You cannot combine --no-edit with -m“). Deploy fáze se tím pádem vždy zastaví na chybě. Vyber jeden z těchto způsobů zadání message (typicky stačí `--no-edit`, protože Git použije výchozí zprávu).
+3. `.github/workflows/auto-codex-review.yml:41-43` – Compare URL je napevno `.../compare/master...`, i když většina repozitářů používá `main`. Pokud je default branch `main`, odkaz na diff skončí 404. Stejně jako ve `Get branch info` kroku je potřeba detekovat základní větev (main/master) nebo použít `${{ github.event.repository.default_branch }}`.
+
+### Doporučené kroky
+- Opravit cesty ve `.workflow-auto.sh`, přidat fallback na lokální skripty a ověřit, že `workflow-auto auto-review` funguje na čistém stroji.
+- U deploy fáze odstranit konfliktní parametry a nasimulovat merge, aby bylo jisté, že skript doběhne až k pushi.
+- V GitHub Action použít dynamickou default branch pro `COMPARE_URL`, ať odkazy z instrukcí vždy fungují.
