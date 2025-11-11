@@ -38,7 +38,7 @@ jobs:
         id: review
         run: |
           BRANCH="${{ steps.branch-info.outputs.current_branch }}"
-          REPO="proteinautomat/brani-sklad"
+          REPO="${{ github.repository }}"
           COMPARE_URL="https://github.com/${REPO}/compare/master...${BRANCH}"
 
           echo "📋 CODE REVIEW INSTRUCTIONS" > /tmp/review.md
@@ -144,37 +144,31 @@ jobs:
               console.log('Note: No PR context for comment. Review file was created.');
             }
 
-      - name: Create review commit
+      - name: Create review instructions file
         run: |
-          git config user.name "Claude Code Reviewer"
-          git config user.email "claude@anthropic.com"
+          # Create temporary file with instructions for manual review
+          cat > /tmp/review_instructions.txt << 'INSTR_EOF'
+          REVIEW INSTRUCTIONS
+          ===================
 
-          # Create REVIEW.md with findings
-          cat > REVIEW.md << 'EOF'
-          # Code Review by Claude
+          This is an automated code review workflow.
 
-          **Status:** ✅ Approved
-          **Date:** $(date -u +'%Y-%m-%d %H:%M:%S UTC')
-          **Reviewer:** Claude AI Code Review System
+          To complete the review:
+          1. Examine the code changes in this branch
+          2. Create or edit REVIEW.md with your findings:
+             - Code quality assessment
+             - Security concerns
+             - Suggestions for improvement
+          3. Commit your review:
+             git add REVIEW.md
+             git commit -m "review: My findings"
+             git push origin HEAD
 
-          ## Summary
-          Code quality is good. All checks passed.
-          Ready for testing and integration.
+          When ready to integrate, run: workflow integrate
+          INSTR_EOF
 
-          ## Review Details
-          See commit message for full review.
-          EOF
-
-          # Commit the review
-          git add REVIEW.md || true
-
-          # Create commit with proper message
-          COMMIT_MSG="review: Claude code review - APPROVED ($(date -u +'%Y-%m-%d %H:%M:%S UTC'))"
-          git commit -m "$COMMIT_MSG" || echo "No changes to commit"
-
-      - name: Push review commit
-        run: |
-          git push origin HEAD:${{ steps.branch-info.outputs.current_branch }} || echo "No new commits to push"
+          echo "✅ Review instructions created"
+          cat /tmp/review_instructions.txt
 
       - name: Log review completion
         run: |
